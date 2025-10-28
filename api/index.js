@@ -30,27 +30,29 @@ app.post("/api/mistral", async (req, res) => {
       return res.status(400).json({ error: "Missing or invalid ingredients array" });
     }
 
-    const ingredientsString = ingredients.join(", ");
+    const response = await hf.textGeneration({
+      model: "mistralai/Mistral-7B-Instruct-v0.2", // ✅ lighter, free-tier friendly
+      inputs: `
+${SYSTEM_PROMPT}
 
-    const response = await hf.chatCompletion({
-      model: "mistralai/Mixtral-8x7B-Instruct-v0.1",
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        {
-          role: "user",
-          content: `I have ${ingredientsString}. Please give me a recipe you'd recommend I make!`,
-        },
-      ],
-      max_tokens: 1024,
+User: I have ${ingredients.join(", ")}. Please give me a recipe you'd recommend!
+Assistant:
+`,
+      parameters: {
+        max_new_tokens: 600,
+        temperature: 0.7,
+      },
     });
 
-    const recipe = response?.choices?.[0]?.message?.content || "No recipe found.";
+    const recipe = response.generated_text || "No recipe found.";
     res.json({ recipe });
   } catch (err) {
-    console.error("Hugging Face API Error:", err);
-    res.status(500).json({ error: "Error fetching recipe from Mistral" });
+    console.error("❌ Hugging Face API Error:", err);
+    res.status(500).json({ error: "Error fetching recipe from Mistral", details: err.message });
   }
 });
+
+
 
 // Export the Express app for Vercel
 export default app;
