@@ -28,7 +28,6 @@ const SYSTEM_PROMPT = `
 You are an assistant that receives a list of ingredients that a user has and suggests a recipe they could make with some or all of those ingredients. You don't need to use every ingredient they mention in your recipe. The recipe can include additional ingredients they didn't mention, but try not to include too many extra ingredients. Format your response in markdown to make it easier to render to a web page.
 `;
 
-// ✅ POST /api/mistral — main endpoint
 app.post("/api/mistral", async (req, res) => {
   try {
     const { ingredients } = req.body;
@@ -38,34 +37,37 @@ app.post("/api/mistral", async (req, res) => {
 
     const ingredientsString = ingredients.join(", ");
 
-    // ✅ Use `conversational` for free-tier Mistral models
-    const response = await hf.conversational({
-      model: "mistralai/Mistral-7B-Instruct-v0.2",
-      inputs: {
-        past_user_inputs: [],
-        generated_responses: [],
-        text: `I have ${ingredientsString}. Please give me a recipe you'd recommend I make!`,
+    // Manual call to the conversational endpoint
+    const response = await fetch("https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.HF_ACCESS_TOKEN}`,
+        "Content-Type": "application/json",
       },
-      parameters: {
-        temperature: 0.7,
-        max_new_tokens: 600,
-      },
+      body: JSON.stringify({
+        inputs: {
+          past_user_inputs: [],
+          generated_responses: [],
+          text: `You are a recipe assistant. I have ${ingredientsString}. Suggest a recipe in markdown.`,
+        },
+      }),
     });
 
-    const recipe =
-      response?.generated_text ||
-      response?.[0]?.generated_text ||
-      "No recipe found.";
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error("❌ HF API HTTP Error:", errText);
+      return res.status(500).json({ error: "Hugging Face API call failed", details: errText });
+    }
 
+    const data = await response.json();
+    const recipe = data?.generated_text || "No recipe found.";
     res.json({ recipe });
   } catch (err) {
     console.error("❌ Hugging Face API Error:", err);
-    res.status(500).json({
-      error: "Error fetching recipe from Mistral",
-      details: err.message,
-    });
+    res.status(500).json({ error: "Error fetching recipe from Mistral", details: err.message });
   }
 });
+
 
 // ✅ Export for Vercel
 export default app;
