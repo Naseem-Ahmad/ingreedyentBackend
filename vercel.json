@@ -1,5 +1,6 @@
 {
   "version": 2,
+<<<<<<< HEAD
   "functions": {
     "api/index.js": {
       "runtime": "vercel-nodejs@4.0.0"
@@ -12,3 +13,10 @@
     }
   ]
 }
+=======
+  "builds": [{ "src": "api/index.js", "use": "@vercel/node" }],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.js" }
+  ]
+}
+>>>>>>> a447c35a033368b7e0fb8486503181d62df4ab48
