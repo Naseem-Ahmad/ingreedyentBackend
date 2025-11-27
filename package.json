@@ -1,0 +1,29 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+   "_comment": "node server.js",
+    "start": "node api/index.js",
+    "dev": "nodemon --watch api --exec \"node api/index.js\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@huggingface/inference": "^4.13.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Naseem-Ahmad/ingreedyentBackend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Naseem-Ahmad/ingreedyentBackend/issues"
+  },
+  "homepage": "https://github.com/Naseem-Ahmad/ingreedyentBackend#readme",
+  "description": ""
+}
